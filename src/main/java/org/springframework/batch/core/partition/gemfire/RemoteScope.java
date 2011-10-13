@@ -49,9 +49,12 @@ import com.gemstone.bp.edu.emory.mathcs.backport.java.util.Arrays;
  * bean components. A user just marks a bean definition as <code>scope="remote"</code>, and then it can be sent over the
  * wire to a remote worker with the same {@link ApplicationContext}. </p>
  * 
- * <p> The internal requirements are to <ul> <li>cache bean instances locally</li> <li>ensure that the instances are
- * scoped proxies (which are Serializable since Spring 3.0).</li> <li>create a unique but meaningful id for the bean
- * factory</li> </ul> </p>
+ * <p> The internal requirements are to </p>
+ *
+ * <ul>
+ *     <li>cache bean instances locally</li> <li>ensure that the instances are scoped proxies (which are Serializable since Spring 3.0).</li>
+ *     <li>create a unique but meaningful id for the bean factory</li>
+ * </ul>
  * 
  * @author Dave Syer
  * 
@@ -66,7 +69,7 @@ public class RemoteScope implements Scope, BeanFactoryPostProcessor {
 
 	private Map<String, Runnable> callbacks = new ConcurrentHashMap<String, Runnable>();
 
-	private boolean proxyTargetClass = false;
+	private boolean proxyTargetClass = true;
 
 	private ConfigurableListableBeanFactory beanFactory;
 

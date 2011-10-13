@@ -31,11 +31,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Date;
+
 /**
  * @author Dave Syer
  * 
  */
-@ContextConfiguration(locations = { "/test-context.xml" })
+@ContextConfiguration(locations = { "/META-INF/spring/context.xml" })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ExampleJobConfigurationTests {
 
@@ -55,7 +57,9 @@ public class ExampleJobConfigurationTests {
 
 	@Test
 	public void testLaunchJob() throws Exception {
-		JobExecution result = jobLauncher.run(job, new JobParametersBuilder().addString("run.id", "integration.test").toJobParameters());
+		JobExecution result = jobLauncher.run(job, new JobParametersBuilder()
+                                                           .addDate("date", new Date())
+                                                           .addString("run.id", "integration.test").toJobParameters());
 		assertNotNull(result);
 		assertEquals(BatchStatus.COMPLETED, result.getStatus());
 		assertEquals(3, result.getStepExecutions().size());

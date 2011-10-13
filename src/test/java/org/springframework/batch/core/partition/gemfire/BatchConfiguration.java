@@ -29,8 +29,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@PropertySource("/batch-h2.properties")
-
 public class BatchConfiguration {
 
     @Value("#{region}")
@@ -44,8 +42,6 @@ public class BatchConfiguration {
 
     @Value("classpath:/org/springframework/batch/core/schema-h2.sql")
     private Resource h2DatabasePopulatorResource;
-
-    private Log log = LogFactory.getLog(getClass());
 
     @Bean
     public static RemoteScope remoteScope() {
@@ -80,12 +76,14 @@ public class BatchConfiguration {
         return new DataSourceTransactionManager(this.dataSource());
     }
 
-
     @Bean
     public DataSource dataSource() {
 
 
-        String jdbcUrl = "jdbc:h2:tcp://localhost/~/batch-gemfire", jdbcPw = "", jdbcDriver = org.h2.Driver.class.getName(), jdbcUser = "sa";
+        String jdbcUrl = "jdbc:h2:tcp://localhost/~/batch-gemfire",
+                jdbcPw = "",
+                jdbcDriver = org.h2.Driver.class.getName(),
+                jdbcUser = "sa";
 
         BasicDataSource basicDataSource = new BasicDataSource();
         basicDataSource.setUrl(jdbcUrl);

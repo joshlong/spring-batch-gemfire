@@ -29,10 +29,12 @@ public class ExampleItemWriter implements ItemWriter<Object> {
 	private static final Log log = LogFactory.getLog(ExampleItemWriter.class);
 
 	/**
-	 * @see ItemWriter#write(Object)
+	 * @see ItemWriter#write(List)
 	 */
 	public void write(List<? extends Object> data) throws Exception {
-		log.info(data);
-	}
+        for(Object o : data)
+        System.out.println(o +"");
+
+    }
 
 }

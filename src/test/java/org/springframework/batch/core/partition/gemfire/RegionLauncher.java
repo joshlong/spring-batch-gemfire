@@ -24,9 +24,10 @@ public abstract class RegionLauncher {
 
 	public static void main(String[] args) throws Exception {
 		
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("/launch-context.xml");
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("/META-INF/spring/context.xml");
 		@SuppressWarnings("unchecked")
 		Region<String, StepExecution> region = context.getBean("region", Region.class);
+
 		assertNotNull(region);
 		region.getAttributesMutator().addCacheListener(new SimpleCacheListener<String,StepExecution>());
 
@@ -39,9 +40,7 @@ public abstract class RegionLauncher {
 			}
 			line = reader.readLine();
 		}
-
 		context.close();
-
 	}
 
 	public static class SimpleCacheListener<K, V> extends CacheListenerAdapter<K, V> implements Declarable {

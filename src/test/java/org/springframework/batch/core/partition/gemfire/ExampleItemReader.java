@@ -17,20 +17,36 @@ package org.springframework.batch.core.partition.gemfire;
 
 import org.springframework.batch.item.ItemReader;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * {@link ItemReader} with hard-coded input data.
  */
 public class ExampleItemReader implements ItemReader<String> {
 
-	private String[] input = { "Hello world!", null };
+    private List<String> inputList = new ArrayList<String>();
 
-	private int index = 0;
+    private Iterator<String> iterator ;
 
-	/**
+    public ExampleItemReader() {
+
+        for(int i =0;i < 10 ; i++)
+            inputList.add("Hello world "+ i);
+
+        this.iterator = inputList.iterator();
+
+    }
+
+
+    /**
 	 * Reads next record from input
 	 */
 	public String read() throws Exception {
-		return input[index++];
+        if(iterator.hasNext())
+		return iterator.next();
+        return null;
 	}
 
 }

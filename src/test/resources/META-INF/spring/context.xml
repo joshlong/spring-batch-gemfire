@@ -22,5 +22,5 @@
 
     <gemfire:cache/>
 
-    <gemfire:partitioned-region id="region" name="step-region"/>
+    <gemfire:partitioned-region id="region" name="step-region" />
 </beans>
