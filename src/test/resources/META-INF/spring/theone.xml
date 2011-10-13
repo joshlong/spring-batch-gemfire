@@ -2,22 +2,25 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:batch="http://www.springframework.org/schema/batch"
-       xmlns:gemfire="http://www.springframework.org/schema/gemfire"
-       xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xmlns:gemfire="http://www.springframework.org/schema/gemfire" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	    http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.1.xsd
-		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
-	<batch:job-repository id="jobRepository" />
 
-    <batch:job id="job"  >
+    <context:component-scan base-package="org.springframework.batch.core.partition.gemfire"/>
+
+    <batch:job-repository id="jobRepository"/>
+
+    <batch:job id="job">
         <batch:step id="step-master">
-            <batch:partition handler="partitionHandler" step="step" partitioner="partitioner" />
+            <batch:partition handler="partitionHandler" step="step" partitioner="partitioner"/>
         </batch:step>
     </batch:job>
 
+    <context:property-placeholder location="batch-h2.properties"/>
+
     <gemfire:cache/>
 
-	<gemfire:partitioned-region id="region" name="step-region" />
-
+    <gemfire:partitioned-region id="region" name="step-region"/>
 </beans>

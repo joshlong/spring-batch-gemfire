@@ -12,11 +12,14 @@ import org.springframework.batch.core.partition.PartitionHandler;
 import org.springframework.batch.core.partition.support.SimplePartitioner;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.item.SimpleStepFactoryBean;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.init.DataSourceInitializer;
@@ -26,13 +29,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@ImportResource("/META-INF/spring/theone.xml")
 @PropertySource("/batch-h2.properties")
+
 public class BatchConfiguration {
 
-    @Autowired private Environment environment;
-
-    @Autowired @Qualifier("region")
+    @Value("#{region}")
     private Region<String, StepExecution> region;
 
     @Autowired @Qualifier("jobRepository")
@@ -48,42 +49,50 @@ public class BatchConfiguration {
 
     @Bean
     public static RemoteScope remoteScope() {
-        return new RemoteScope();
+        RemoteScope rs = new RemoteScope();
+        rs.setProxyTargetClass(true);
+        return rs;
     }
 
-    @Bean
-    public DataSourceInitializer initializer() throws Exception {
+   @Bean
+   public DataSourceInitializer initializer() throws Exception {
 
-        ResourceDatabasePopulator cleaner = new ResourceDatabasePopulator();
-        cleaner.addScript(this.h2Cleanup);
-        cleaner.setIgnoreFailedDrops(true);
-        cleaner.setContinueOnError(true);
+       ResourceDatabasePopulator cleaner = new ResourceDatabasePopulator();
+       cleaner.addScript(this.h2Cleanup);
+       cleaner.setIgnoreFailedDrops(true);
+       cleaner.setContinueOnError(true);
 
-        ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
-        databasePopulator.addScript(this.h2DatabasePopulatorResource);
-        databasePopulator.setContinueOnError(true);
+       ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
+       databasePopulator.addScript(this.h2DatabasePopulatorResource);
+       databasePopulator.setContinueOnError(true);
 
-        DataSourceInitializer dataSourceInitializer = new DataSourceInitializer();
-        dataSourceInitializer.setDataSource(this.dataSource());
-        dataSourceInitializer.setEnabled(true);
-        dataSourceInitializer.setDatabaseCleaner(cleaner);
-        dataSourceInitializer.setDatabasePopulator(databasePopulator);
+       DataSourceInitializer dataSourceInitializer = new DataSourceInitializer();
+       dataSourceInitializer.setDataSource(this.dataSource());
+       dataSourceInitializer.setEnabled(false );
+       dataSourceInitializer.setDatabaseCleaner(cleaner);
+       dataSourceInitializer.setDatabasePopulator(databasePopulator);
 
-        return dataSourceInitializer;
-    }
+       return dataSourceInitializer;
+   }
 
     @Bean
     public PlatformTransactionManager transactionManager() {
         return new DataSourceTransactionManager(this.dataSource());
     }
 
+
     @Bean
     public DataSource dataSource() {
+
+
+        String jdbcUrl = "jdbc:h2:tcp://localhost/~/batch-gemfire", jdbcPw = "", jdbcDriver = org.h2.Driver.class.getName(), jdbcUser = "sa";
+
         BasicDataSource basicDataSource = new BasicDataSource();
-        basicDataSource.setDriverClassName(this.environment.getProperty("batch.jdbc.driver"));
-        basicDataSource.setUrl(this.environment.getProperty("batch.jdbc.url"));
-        basicDataSource.setUsername(this.environment.getProperty("batch.jdbc.user"));
-        basicDataSource.setPassword(this.environment.getProperty("batch.jdbc.password"));
+        basicDataSource.setUrl(jdbcUrl);
+        basicDataSource.setPassword(jdbcPw);
+        basicDataSource.setUsername(jdbcUser);
+        basicDataSource.setDriverClassName(jdbcDriver);
+
         return basicDataSource;
     }
 
@@ -96,20 +105,20 @@ public class BatchConfiguration {
 
     @Bean
     @Scope("remote")
-    public SimpleStepFactoryBean step() {
+    public Step step() throws Exception {
         SimpleStepFactoryBean<String, Object> bean = new SimpleStepFactoryBean<String, Object>();
         bean.setItemReader(new ExampleItemReader());
         bean.setItemWriter(new ExampleItemWriter());
         bean.setTransactionManager(this.transactionManager());
         bean.setJobRepository(this.jobRepository);
-        return bean;
+        return (TaskletStep)bean.getObject();
     }
 
     @Bean
-    public PartitionHandler handler() throws Exception {
+    public PartitionHandler partitionHandler() throws Exception {
         GemfirePartitionHandler gemfirePartitionHandler = new GemfirePartitionHandler();
         gemfirePartitionHandler.setGridSize(2);
-        gemfirePartitionHandler.setStep((Step) step().getObject());
+        gemfirePartitionHandler.setStep(  step());
         gemfirePartitionHandler.setRegion(this.region);
         return gemfirePartitionHandler;
     }
